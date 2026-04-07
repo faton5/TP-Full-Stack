@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorties Étudiantes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="hero">
+        <p class="eyebrow">Campus social planner</p>
+        <h1>Suggestions de sorties et bons plans entre etudiants</h1>
+        <p class="hero-text">Ajoute une idee, filtre rapidement par categorie et garde une liste claire pour organiser vos prochaines activites.</p>
+    </header>
+
+    <main class="layout">
+        <section class="form-section">
+            <h2>Ajouter une sortie</h2>
+            <form id="addForm">
+                <label for="titre">Titre</label>
+                <input type="text" id="titre" placeholder="Ex: Cine, Bowling, Musee" required>
+
+                <label for="categorie">Categorie</label>
+                <select id="categorie" required>
+                    <option value="">-- Categorie --</option>
+                    <option value="culture">Culture</option>
+                    <option value="sport">Sport</option>
+                    <option value="food">Food</option>
+                    <option value="nature">Nature</option>
+                    <option value="jeu">Jeu</option>
+                </select>
+
+                <label for="budget">Budget</label>
+                <select id="budget" required>
+                    <option value="">-- Budget --</option>
+                    <option value="faible">Faible</option>
+                    <option value="moyen">Moyen</option>
+                    <option value="eleve">Eleve</option>
+                </select>
+
+                <label for="description">Description</label>
+                <input type="text" id="description" placeholder="Courte description" required>
+
+                <label for="note">Note</label>
+                <input type="number" id="note" placeholder="1 a 5" min="1" max="5" required>
+
+                <button type="submit">Ajouter la sortie</button>
+            </form>
+            <p id="message" class="hidden"></p>
+        </section>
+
+        <section class="list-section">
+            <h2>Liste des sorties</h2>
+
+            <div class="filter-container">
+                <p class="filters-title">Filtrer par categorie</p>
+                <div class="filters" role="group" aria-label="Filtres par categorie">
+                    <button type="button" class="filter-btn active" data-category="toutes">Toutes</button>
+                    <button type="button" class="filter-btn" data-category="culture">Culture</button>
+                    <button type="button" class="filter-btn" data-category="sport">Sport</button>
+                    <button type="button" class="filter-btn" data-category="food">Food</button>
+                    <button type="button" class="filter-btn" data-category="nature">Nature</button>
+                    <button type="button" class="filter-btn" data-category="jeu">Jeu</button>
+                </div>
+                <p id="counter">Le compteur sera mis a jour automatiquement par le script backend/frontend.</p>
+            </div>
+
+            <div id="suggestionsList" class="suggestions-grid"></div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
