@@ -1,6 +1,6 @@
 const API_URL = "http://127.0.0.1:5000/api/suggestions";
 
-// DOM
+// Cibler les éléments du DOM
 const form = document.getElementById("addForm");
 const suggestionsList = document.getElementById("suggestionsList");
 const counter = document.getElementById("counter");
@@ -8,126 +8,119 @@ const searchInput = document.getElementById("searchInput");
 const sortSelect = document.getElementById("sortSelect");
 const editModal = document.getElementById("editModal");
 const editForm = document.getElementById("editForm");
-const cancelEditBtn = document.getElementById("cancelEdit");
 
-// État actif des filtres
+// Filtres actifs
 let currentCategory = "toutes";
 let currentBudget = "tous";
 
-// --- Construction de l'URL avec tous les paramètres actifs ---
-function buildUrl() {
-    const params = new URLSearchParams();
-    if (currentCategory !== "toutes") params.set("categorie", currentCategory);
-    if (currentBudget !== "tous") params.set("budget", currentBudget);
-    const search = searchInput.value.trim();
-    if (search) params.set("search", search);
-    const sort = sortSelect.value;
-    if (sort) params.set("sort", sort);
-    const qs = params.toString();
-    return qs ? `${API_URL}?${qs}` : API_URL;
-}
-
-// --- GET : récupérer et afficher les suggestions ---
+// GET — Récupérer et afficher les suggestions
 function fetchSuggestions() {
-    fetch(buildUrl())
-        .then(r => r.json())
-        .then(data => {
-            renderSuggestions(data);
-            counter.textContent = `Total : ${data.length} suggestion(s)`;
+    // Construction de l'URL avec les filtres actifs
+    let url = API_URL;
+    const params = [];
+    if (currentCategory !== "toutes") params.push("categorie=" + currentCategory);
+    if (currentBudget !== "tous")     params.push("budget=" + currentBudget);
+    if (searchInput.value.trim())     params.push("search=" + searchInput.value.trim());
+    if (sortSelect.value)             params.push("sort=" + sortSelect.value);
+    if (params.length > 0) url += "?" + params.join("&");
+
+    fetch(url)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            suggestionsList.innerHTML = "";
+
+            data.forEach(function(s) {
+                const article = document.createElement("article");
+                article.innerHTML = `
+                    <div class="card-img-wrap">
+                        <img src="https://picsum.photos/400/200?random=${s.id}" alt="Image illustrant la sortie"/>
+                        <span class="card-category">${s.categorie}</span>
+                        <button class="card-delete" title="Supprimer">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-top">
+                            <h4>${s.titre}</h4>
+                            <span class="card-note">
+                                <span class="material-symbols-outlined">star</span>${s.note}/5
+                            </span>
+                        </div>
+                        <p>${s.description}</p>
+                        <div class="card-footer">
+                            <p class="card-budget">Budget : ${s.budget}</p>
+                            <button class="card-edit" title="Modifier">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                article.querySelector(".card-delete").addEventListener("click", function() { deleteSuggestion(s.id); });
+                article.querySelector(".card-edit").addEventListener("click", function() { openEditModal(s); });
+                suggestionsList.appendChild(article);
+            });
+
+            counter.textContent = "Total : " + data.length + " suggestion(s)";
         })
-        .catch(err => console.error("Erreur fetch:", err));
+        .catch(function(err) { console.error("Erreur fetch :", err); });
 }
 
-function renderSuggestions(data) {
-    suggestionsList.innerHTML = "";
-    data.forEach(s => {
-        const article = document.createElement("article");
-        article.innerHTML = `
-            <div class="card-img-wrap">
-                <img src="https://picsum.photos/400/200?random=${s.id}" alt="Image illustrant la sortie"/>
-                <span class="card-category">${s.categorie}</span>
-                <button class="card-delete" title="Supprimer">
-                    <span class="material-symbols-outlined">delete</span>
-                </button>
-            </div>
-            <div class="card-body">
-                <div class="card-top">
-                    <h4>${s.titre}</h4>
-                    <span class="card-note">
-                        <span class="material-symbols-outlined">star</span>${s.note}/5
-                    </span>
-                </div>
-                <p>${s.description}</p>
-                <div class="card-footer">
-                    <p class="card-budget">Budget : ${s.budget}</p>
-                    <button class="card-edit" title="Modifier">
-                        <span class="material-symbols-outlined">edit</span>
-                    </button>
-                </div>
-            </div>
-        `;
-        article.querySelector(".card-delete").addEventListener("click", () => deleteSuggestion(s.id));
-        article.querySelector(".card-edit").addEventListener("click", () => openEditModal(s));
-        suggestionsList.appendChild(article);
-    });
-}
-
-// --- GET stats ---
+// GET — Récupérer et afficher les stats
 function fetchStats() {
-    fetch(`${API_URL}/stats`)
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById("statCount").textContent = `${data.count} sortie(s)`;
-            document.getElementById("statAvg").textContent = `Note moy. : ${data.note_moyenne ?? "—"}/5`;
-            document.getElementById("statBest").textContent = data.meilleure
-                ? `Meilleure : ${data.meilleure.titre}`
-                : "—";
+    fetch(API_URL + "/stats")
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            document.getElementById("statCount").textContent = data.count + " sortie(s)";
+            document.getElementById("statAvg").textContent = "Note moy. : " + (data.note_moyenne || "—") + "/5";
+            document.getElementById("statBest").textContent = data.meilleure ? "Meilleure : " + data.meilleure.titre : "—";
         })
-        .catch(err => console.error("Erreur stats:", err));
+        .catch(function(err) { console.error("Erreur stats :", err); });
 }
 
-// --- POST : ajouter une suggestion ---
+// POST — Ajouter une suggestion
 form.addEventListener("submit", function(event) {
     event.preventDefault();
+
     const newSuggestion = {
-        titre: document.getElementById("titre").value,
-        categorie: document.getElementById("categorie").value,
-        budget: document.getElementById("budget").value,
+        titre:       document.getElementById("titre").value,
+        categorie:   document.getElementById("categorie").value,
+        budget:      document.getElementById("budget").value,
         description: document.getElementById("description").value,
-        note: parseInt(document.getElementById("note").value)
+        note:        parseInt(document.getElementById("note").value)
     };
+
     fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newSuggestion)
     })
-    .then(r => r.json())
-    .then(() => {
+    .then(function(response) { return response.json(); })
+    .then(function() {
         form.reset();
         fetchSuggestions();
         fetchStats();
     })
-    .catch(err => console.error("Erreur ajout:", err));
+    .catch(function(err) { console.error("Erreur ajout :", err); });
 });
 
-// --- DELETE : supprimer une suggestion ---
+// DELETE — Supprimer une suggestion
 function deleteSuggestion(id) {
-    fetch(`${API_URL}/${id}`, { method: "DELETE" })
-        .then(() => {
+    fetch(API_URL + "/" + id, { method: "DELETE" })
+        .then(function() {
             fetchSuggestions();
             fetchStats();
         })
-        .catch(err => console.error("Erreur suppression:", err));
+        .catch(function(err) { console.error("Erreur suppression :", err); });
 }
 
-// --- PUT : modifier une suggestion (modal) ---
+// PUT — Ouvrir le modal et pré-remplir les champs
 function openEditModal(s) {
-    document.getElementById("editId").value = s.id;
-    document.getElementById("editTitre").value = s.titre;
-    document.getElementById("editCategorie").value = s.categorie;
-    document.getElementById("editBudget").value = s.budget;
+    document.getElementById("editId").value          = s.id;
+    document.getElementById("editTitre").value       = s.titre;
+    document.getElementById("editCategorie").value   = s.categorie;
+    document.getElementById("editBudget").value      = s.budget;
     document.getElementById("editDescription").value = s.description;
-    document.getElementById("editNote").value = s.note;
+    document.getElementById("editNote").value        = s.note;
     editModal.classList.remove("hidden");
 }
 
@@ -136,59 +129,62 @@ function closeEditModal() {
     editForm.reset();
 }
 
-cancelEditBtn.addEventListener("click", closeEditModal);
+document.getElementById("cancelEdit").addEventListener("click", closeEditModal);
 editModal.addEventListener("click", function(e) {
     if (e.target === editModal) closeEditModal();
 });
 
+// PUT — Envoyer les modifications
 editForm.addEventListener("submit", function(e) {
     e.preventDefault();
+
     const id = document.getElementById("editId").value;
     const updated = {
-        titre: document.getElementById("editTitre").value,
-        categorie: document.getElementById("editCategorie").value,
-        budget: document.getElementById("editBudget").value,
+        titre:       document.getElementById("editTitre").value,
+        categorie:   document.getElementById("editCategorie").value,
+        budget:      document.getElementById("editBudget").value,
         description: document.getElementById("editDescription").value,
-        note: parseInt(document.getElementById("editNote").value)
+        note:        parseInt(document.getElementById("editNote").value)
     };
-    fetch(`${API_URL}/${id}`, {
+
+    fetch(API_URL + "/" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated)
     })
-    .then(r => r.json())
-    .then(() => {
+    .then(function(response) { return response.json(); })
+    .then(function() {
         closeEditModal();
         fetchSuggestions();
         fetchStats();
     })
-    .catch(err => console.error("Erreur édition:", err));
+    .catch(function(err) { console.error("Erreur édition :", err); });
 });
 
-// --- Filtres catégorie ---
-document.querySelectorAll(".filter-btn[data-category]").forEach(btn => {
+// Filtres catégorie
+document.querySelectorAll(".filter-btn[data-category]").forEach(function(btn) {
     btn.addEventListener("click", function() {
-        document.querySelectorAll(".filter-btn[data-category]").forEach(b => b.classList.remove("active"));
-        this.classList.add("active");
-        currentCategory = this.getAttribute("data-category");
+        document.querySelectorAll(".filter-btn[data-category]").forEach(function(b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        currentCategory = btn.getAttribute("data-category");
         fetchSuggestions();
     });
 });
 
-// --- Filtres budget ---
-document.querySelectorAll(".filter-btn[data-budget]").forEach(btn => {
+// Filtres budget
+document.querySelectorAll(".filter-btn[data-budget]").forEach(function(btn) {
     btn.addEventListener("click", function() {
-        document.querySelectorAll(".filter-btn[data-budget]").forEach(b => b.classList.remove("active"));
-        this.classList.add("active");
-        currentBudget = this.getAttribute("data-budget");
+        document.querySelectorAll(".filter-btn[data-budget]").forEach(function(b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        currentBudget = btn.getAttribute("data-budget");
         fetchSuggestions();
     });
 });
 
-// --- Recherche et tri ---
-searchInput.addEventListener("input", () => fetchSuggestions());
-sortSelect.addEventListener("change", () => fetchSuggestions());
+// Recherche et tri
+searchInput.addEventListener("input", function() { fetchSuggestions(); });
+sortSelect.addEventListener("change", function() { fetchSuggestions(); });
 
-// --- Chargement initial ---
+// Chargement initial
 fetchSuggestions();
 fetchStats();
