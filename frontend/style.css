@@ -459,6 +459,14 @@ form button[type="submit"]:hover {
     margin-top: 0.6rem !important;
 }
 
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+    padding: 2rem 1rem;
+}
+
 .material-symbols-outlined {
     font-variation-settings: "FILL" 1, "wght" 500, "GRAD" 0, "opsz" 24;
 }

@@ -40,7 +40,12 @@ function fetchSuggestions() {
         .then(function(data) {
             suggestionsList.innerHTML = "";
 
-            data.forEach(function(s) {
+            if (data.length === 0) {
+            suggestionsList.innerHTML = "<p class='empty-state'>Aucune sortie ne correspond à votre recherche.</p>";
+            return;
+        }
+
+        data.forEach(function(s) {
                 const article = document.createElement("article");
                 article.innerHTML = `
                     <div class="card-img-wrap">
