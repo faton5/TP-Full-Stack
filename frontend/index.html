@@ -38,7 +38,7 @@
                     <option value="">-- Budget --</option>
                     <option value="faible">Faible</option>
                     <option value="moyen">Moyen</option>
-                    <option value="eleve">Eleve</option>
+                    <option value="élevé">Eleve</option>
                 </select>
 
                 <label for="description">Description</label>
@@ -55,6 +55,21 @@
         <section class="list-section">
             <h2>Liste des sorties</h2>
 
+            <div class="stats-bar">
+                <span id="statCount">—</span>
+                <span id="statAvg">—</span>
+                <span id="statBest">—</span>
+            </div>
+
+            <div class="search-sort-row">
+                <input type="text" id="searchInput" placeholder="Rechercher une sortie...">
+                <select id="sortSelect">
+                    <option value="">Trier par...</option>
+                    <option value="note">Meilleure note</option>
+                    <option value="titre">Titre A–Z</option>
+                </select>
+            </div>
+
             <div class="filter-container">
                 <p class="filters-title">Filtrer par categorie</p>
                 <div class="filters" role="group" aria-label="Filtres par categorie">
@@ -65,12 +80,61 @@
                     <button type="button" class="filter-btn" data-category="nature">Nature</button>
                     <button type="button" class="filter-btn" data-category="jeu">Jeu</button>
                 </div>
-                <p id="counter">Le compteur sera mis a jour automatiquement par le script backend/frontend.</p>
+
+                <p class="filters-title filters-title--mt">Filtrer par budget</p>
+                <div class="filters" role="group" aria-label="Filtres par budget">
+                    <button type="button" class="filter-btn active" data-budget="tous">Tous</button>
+                    <button type="button" class="filter-btn" data-budget="faible">Faible</button>
+                    <button type="button" class="filter-btn" data-budget="moyen">Moyen</button>
+                    <button type="button" class="filter-btn" data-budget="élevé">Eleve</button>
+                </div>
+
+                <p id="counter"></p>
             </div>
 
             <div id="suggestionsList" class="suggestions-grid"></div>
         </section>
     </main>
+
+    <!-- Modal d'édition -->
+    <div id="editModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2>Modifier la sortie</h2>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+
+                <label for="editTitre">Titre</label>
+                <input type="text" id="editTitre" required>
+
+                <label for="editCategorie">Categorie</label>
+                <select id="editCategorie" required>
+                    <option value="culture">Culture</option>
+                    <option value="sport">Sport</option>
+                    <option value="food">Food</option>
+                    <option value="nature">Nature</option>
+                    <option value="jeu">Jeu</option>
+                </select>
+
+                <label for="editBudget">Budget</label>
+                <select id="editBudget" required>
+                    <option value="faible">Faible</option>
+                    <option value="moyen">Moyen</option>
+                    <option value="élevé">Eleve</option>
+                </select>
+
+                <label for="editDescription">Description</label>
+                <input type="text" id="editDescription" required>
+
+                <label for="editNote">Note</label>
+                <input type="number" id="editNote" min="1" max="5" required>
+
+                <div class="modal-actions">
+                    <button type="button" id="cancelEdit">Annuler</button>
+                    <button type="submit">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

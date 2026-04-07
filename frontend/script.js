@@ -1,85 +1,94 @@
-// URL de l'API (à adapter avec le port Flask)
 const API_URL = "http://127.0.0.1:5000/api/suggestions";
 
-// Étape 1 : Cibler les éléments du DOM
+// DOM
 const form = document.getElementById("addForm");
 const suggestionsList = document.getElementById("suggestionsList");
 const counter = document.getElementById("counter");
-const filterButtons = document.querySelectorAll(".filter-btn");
+const searchInput = document.getElementById("searchInput");
+const sortSelect = document.getElementById("sortSelect");
+const editModal = document.getElementById("editModal");
+const editForm = document.getElementById("editForm");
+const cancelEditBtn = document.getElementById("cancelEdit");
 
-function setActiveFilter(activeButton) {
-    filterButtons.forEach(button => button.classList.remove("active"));
-    activeButton.classList.add("active");
+// État actif des filtres
+let currentCategory = "toutes";
+let currentBudget = "tous";
+
+// --- Construction de l'URL avec tous les paramètres actifs ---
+function buildUrl() {
+    const params = new URLSearchParams();
+    if (currentCategory !== "toutes") params.set("categorie", currentCategory);
+    if (currentBudget !== "tous") params.set("budget", currentBudget);
+    const search = searchInput.value.trim();
+    if (search) params.set("search", search);
+    const sort = sortSelect.value;
+    if (sort) params.set("sort", sort);
+    const qs = params.toString();
+    return qs ? `${API_URL}?${qs}` : API_URL;
 }
 
-function getActiveCategory() {
-    const activeButton = document.querySelector(".filter-btn.active");
-    return activeButton ? activeButton.getAttribute("data-category") : "toutes";
-}
-
-// Étape 2 : Récupérer et afficher les données (GET)
-function fetchSuggestions(category = "toutes") {
-    let url = API_URL;
-    if (category !== "toutes") {
-        url += `?categorie=${category}`;
-    }
-
-    // Syntaxe exacte de la slide "API Rest"
-    fetch(url)
-        .then(response => response.json())
+// --- GET : récupérer et afficher les suggestions ---
+function fetchSuggestions() {
+    fetch(buildUrl())
+        .then(r => r.json())
         .then(data => {
-            suggestionsList.innerHTML = ""; // On vide la liste
-
-            // On boucle sur chaque objet JSON
-            data.forEach(suggestion => {
-                // Création de l'article HTML (Slide TD1)
-                const article = document.createElement("article");
-                article.className = "bg-surface-container-lowest rounded-[2rem] overflow-hidden shadow-md hover:translate-y-[-4px] transition-transform duration-300";
-                
-                // Injection des données dans le design Tailwind
-                article.innerHTML = `
-                    <div class="relative h-32 w-full bg-slate-200">
-                        <img class="w-full h-full object-cover" src="https://picsum.photos/400/200?random=${suggestion.id}" alt="Image illustrant la sortie"/>
-                        <div class="absolute top-4 left-4 flex gap-2">
-                            <span class="bg-white/80 backdrop-blur-md text-primary text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">${suggestion.categorie}</span>
-                        </div>
-                        <div class="absolute bottom-4 right-4">
-                            <button onclick="deleteSuggestion(${suggestion.id})" class="w-10 h-10 bg-error/10 text-error rounded-full flex items-center justify-center hover:bg-error hover:text-white transition-colors">
-                                <span class="material-symbols-outlined text-xl">delete</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-xl font-bold leading-tight text-on-surface">${suggestion.titre}</h4>
-                            <div class="flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded-lg">
-                                <span class="material-symbols-outlined text-sm">star</span>
-                                <span class="text-xs font-bold">${suggestion.note}/5</span>
-                            </div>
-                        </div>
-                        <p class="text-sm text-on-surface-variant mb-4">${suggestion.description}</p>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-wide">Budget : ${suggestion.budget}</span>
-                        </div>
-                    </div>
-                `;
-                // On ajoute l'élément au DOM
-                suggestionsList.appendChild(article);
-            });
-
-            if (counter) {
-                counter.textContent = `Total : ${data.length} suggestion(s)`;
-            }
+            renderSuggestions(data);
+            counter.textContent = `Total : ${data.length} suggestion(s)`;
         })
-        .catch(error => {
-            console.error("Erreur lors de la récupération :", error);
-        });
+        .catch(err => console.error("Erreur fetch:", err));
 }
 
-// Étape 3 : Ajouter une suggestion (POST)
-form.addEventListener("submit", function(event) {
-    event.preventDefault(); // Annule le rechargement par défaut
+function renderSuggestions(data) {
+    suggestionsList.innerHTML = "";
+    data.forEach(s => {
+        const article = document.createElement("article");
+        article.innerHTML = `
+            <div class="card-img-wrap">
+                <img src="https://picsum.photos/400/200?random=${s.id}" alt="Image illustrant la sortie"/>
+                <span class="card-category">${s.categorie}</span>
+                <button class="card-delete" title="Supprimer">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="card-top">
+                    <h4>${s.titre}</h4>
+                    <span class="card-note">
+                        <span class="material-symbols-outlined">star</span>${s.note}/5
+                    </span>
+                </div>
+                <p>${s.description}</p>
+                <div class="card-footer">
+                    <p class="card-budget">Budget : ${s.budget}</p>
+                    <button class="card-edit" title="Modifier">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        article.querySelector(".card-delete").addEventListener("click", () => deleteSuggestion(s.id));
+        article.querySelector(".card-edit").addEventListener("click", () => openEditModal(s));
+        suggestionsList.appendChild(article);
+    });
+}
 
+// --- GET stats ---
+function fetchStats() {
+    fetch(`${API_URL}/stats`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("statCount").textContent = `${data.count} sortie(s)`;
+            document.getElementById("statAvg").textContent = `Note moy. : ${data.note_moyenne ?? "—"}/5`;
+            document.getElementById("statBest").textContent = data.meilleure
+                ? `Meilleure : ${data.meilleure.titre}`
+                : "—";
+        })
+        .catch(err => console.error("Erreur stats:", err));
+}
+
+// --- POST : ajouter une suggestion ---
+form.addEventListener("submit", function(event) {
+    event.preventDefault();
     const newSuggestion = {
         titre: document.getElementById("titre").value,
         categorie: document.getElementById("categorie").value,
@@ -87,46 +96,99 @@ form.addEventListener("submit", function(event) {
         description: document.getElementById("description").value,
         note: parseInt(document.getElementById("note").value)
     };
-
-    // Requête POST vue en TD1
     fetch(API_URL, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newSuggestion)
     })
-    .then(response => response.json())
-    .then(data => {
-        form.reset(); // Vider les champs
-        fetchSuggestions(getActiveCategory()); // Recharger la liste sans perdre le filtre actif
+    .then(r => r.json())
+    .then(() => {
+        form.reset();
+        fetchSuggestions();
+        fetchStats();
     })
-    .catch(error => {
-        console.error("Erreur lors de l'ajout :", error);
-    });
+    .catch(err => console.error("Erreur ajout:", err));
 });
 
-// Étape Bonus : Supprimer un élément (Niveau Avancé)
+// --- DELETE : supprimer une suggestion ---
 function deleteSuggestion(id) {
-    fetch(`${API_URL}/${id}`, {
-        method: "DELETE"
-    })
-    .then(() => {
-        fetchSuggestions(getActiveCategory()); // Mise à jour de l'affichage sans changer le filtre
-    })
-    .catch(error => {
-        console.error("Erreur de suppression :", error);
-    });
+    fetch(`${API_URL}/${id}`, { method: "DELETE" })
+        .then(() => {
+            fetchSuggestions();
+            fetchStats();
+        })
+        .catch(err => console.error("Erreur suppression:", err));
 }
 
-// Écouteur pour les boutons de filtrage
-filterButtons.forEach(button => {
-    button.addEventListener("click", function() {
-        setActiveFilter(this);
-        const category = this.getAttribute("data-category");
-        fetchSuggestions(category);
+// --- PUT : modifier une suggestion (modal) ---
+function openEditModal(s) {
+    document.getElementById("editId").value = s.id;
+    document.getElementById("editTitre").value = s.titre;
+    document.getElementById("editCategorie").value = s.categorie;
+    document.getElementById("editBudget").value = s.budget;
+    document.getElementById("editDescription").value = s.description;
+    document.getElementById("editNote").value = s.note;
+    editModal.classList.remove("hidden");
+}
+
+function closeEditModal() {
+    editModal.classList.add("hidden");
+    editForm.reset();
+}
+
+cancelEditBtn.addEventListener("click", closeEditModal);
+editModal.addEventListener("click", function(e) {
+    if (e.target === editModal) closeEditModal();
+});
+
+editForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const id = document.getElementById("editId").value;
+    const updated = {
+        titre: document.getElementById("editTitre").value,
+        categorie: document.getElementById("editCategorie").value,
+        budget: document.getElementById("editBudget").value,
+        description: document.getElementById("editDescription").value,
+        note: parseInt(document.getElementById("editNote").value)
+    };
+    fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated)
+    })
+    .then(r => r.json())
+    .then(() => {
+        closeEditModal();
+        fetchSuggestions();
+        fetchStats();
+    })
+    .catch(err => console.error("Erreur édition:", err));
+});
+
+// --- Filtres catégorie ---
+document.querySelectorAll(".filter-btn[data-category]").forEach(btn => {
+    btn.addEventListener("click", function() {
+        document.querySelectorAll(".filter-btn[data-category]").forEach(b => b.classList.remove("active"));
+        this.classList.add("active");
+        currentCategory = this.getAttribute("data-category");
+        fetchSuggestions();
     });
 });
 
-// Chargement initial des données au démarrage
+// --- Filtres budget ---
+document.querySelectorAll(".filter-btn[data-budget]").forEach(btn => {
+    btn.addEventListener("click", function() {
+        document.querySelectorAll(".filter-btn[data-budget]").forEach(b => b.classList.remove("active"));
+        this.classList.add("active");
+        currentBudget = this.getAttribute("data-budget");
+        fetchSuggestions();
+    });
+});
+
+// --- Recherche et tri ---
+searchInput.addEventListener("input", () => fetchSuggestions());
+sortSelect.addEventListener("change", () => fetchSuggestions());
+
+// --- Chargement initial ---
 fetchSuggestions();
+fetchStats();

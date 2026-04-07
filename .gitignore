@@ -1,0 +1,5 @@
+.claude
+Backend/venv/
+Backend/__pycache__/
+__pycache__/
+*.pyc
