@@ -471,4 +471,46 @@ form button[type="submit"]:hover {
     .form-section {
         position: static;
     }
+
+    .hero {
+        padding: 2rem 1rem 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .layout {
+        padding: 0.6rem;
+        gap: 0.6rem;
+    }
+
+    .form-section,
+    .list-section {
+        padding: 0.9rem;
+    }
+
+    .suggestions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-sort-row {
+        flex-direction: column;
+    }
+
+    .search-sort-row select {
+        width: 100%;
+    }
+
+    .stats-bar {
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .filter-btn {
+        font-size: 0.78rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+    .card-img-wrap {
+        height: 11rem;
+    }
 }
