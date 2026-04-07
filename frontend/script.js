@@ -77,20 +77,27 @@ function fetchSuggestions() {
             });
 
             counter.textContent = "Total : " + data.length + " suggestion(s)";
+            updateStats(data);
         })
         .catch(function(err) { console.error("Erreur fetch :", err); });
 }
 
-// GET — Récupérer et afficher les stats
-function fetchStats() {
-    fetch(API_URL + "/stats")
-        .then(function(response) { return response.json(); })
-        .then(function(data) {
-            document.getElementById("statCount").textContent = data.count + " sortie(s)";
-            document.getElementById("statAvg").textContent = "Note moy. : " + (data.note_moyenne || "—") + "/5";
-            document.getElementById("statBest").textContent = data.meilleure ? "Meilleure : " + data.meilleure.titre : "—";
-        })
-        .catch(function(err) { console.error("Erreur stats :", err); });
+// Calcul des stats depuis les données déjà filtrées
+function updateStats(data) {
+    if (data.length === 0) {
+        document.getElementById("statCount").textContent = "0 sortie(s)";
+        document.getElementById("statAvg").textContent = "Note moy. : —";
+        document.getElementById("statBest").textContent = "Meilleure : —";
+        return;
+    }
+    var total = data.length;
+    var somme = data.reduce(function(acc, s) { return acc + s.note; }, 0);
+    var moyenne = (somme / total).toFixed(2);
+    var meilleure = data.reduce(function(best, s) { return s.note > best.note ? s : best; }, data[0]);
+
+    document.getElementById("statCount").textContent = total + " sortie(s)";
+    document.getElementById("statAvg").textContent = "Note moy. : " + moyenne + "/5";
+    document.getElementById("statBest").textContent = "Meilleure : " + meilleure.titre;
 }
 
 // POST — Ajouter une suggestion
@@ -118,7 +125,6 @@ form.addEventListener("submit", function(event) {
             form.reset();
             showMessage("Sortie ajoutée avec succès !", "success");
             fetchSuggestions();
-            fetchStats();
         }
     })
     .catch(function(err) {
@@ -130,10 +136,7 @@ form.addEventListener("submit", function(event) {
 // DELETE — Supprimer une suggestion
 function deleteSuggestion(id) {
     fetch(API_URL + "/" + id, { method: "DELETE" })
-        .then(function() {
-            fetchSuggestions();
-            fetchStats();
-        })
+        .then(function() { fetchSuggestions(); })
         .catch(function(err) { console.error("Erreur suppression :", err); });
 }
 
@@ -180,7 +183,6 @@ editForm.addEventListener("submit", function(e) {
     .then(function() {
         closeEditModal();
         fetchSuggestions();
-        fetchStats();
     })
     .catch(function(err) { console.error("Erreur édition :", err); });
 });
@@ -211,4 +213,3 @@ sortSelect.addEventListener("change", function() { fetchSuggestions(); });
 
 // Chargement initial
 fetchSuggestions();
-fetchStats();
