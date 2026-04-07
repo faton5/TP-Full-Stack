@@ -27,11 +27,31 @@ suggestions = [
     {"id": 17, "titre": "Brunch dominical",     "categorie": "food",    "budget": "moyen",  "description": "Brunch copieux dans un café branché.",           "note": 5},
     {"id": 18, "titre": "Jeu de société café",  "categorie": "jeu",     "budget": "faible", "description": "Après-midi jeux de société dans un café ludique.","note": 5},
     {"id": 19, "titre": "Visite du Louvre",     "categorie": "culture", "budget": "moyen",  "description": "Visite guidée des galeries égyptiennes.",        "note": 4},
-    {"id": 20, "titre": "Kayak sur la Marne",   "categorie": "nature",  "budget": "moyen",  "description": "Location de kayak pour une balade fluviale.",    "note": 5},
+    {"id": 20, "titre": "Kayak sur la Marne",       "categorie": "nature",  "budget": "moyen",  "description": "Location de kayak pour une balade fluviale.",             "note": 5},
+    {"id": 21, "titre": "McDo après les cours",     "categorie": "food",    "budget": "faible", "description": "Classique mais efficace après une longue journée.",       "note": 2},
+    {"id": 22, "titre": "Soirée karaoké",           "categorie": "jeu",     "budget": "moyen",  "description": "Karaoké en groupe, ambiance garantie mais oreilles en danger.", "note": 3},
+    {"id": 23, "titre": "Musée Grévin",             "categorie": "culture", "budget": "élevé",  "description": "Les statues de cire valent-elles vraiment ce prix ?",     "note": 2},
+    {"id": 24, "titre": "Balade à Montmartre",      "categorie": "nature",  "budget": "faible", "description": "Grimper la butte et profiter de la vue sur Paris.",       "note": 5},
+    {"id": 25, "titre": "Accrobranche",             "categorie": "sport",   "budget": "élevé",  "description": "Parcours dans les arbres, adrénaline assurée.",           "note": 4},
+    {"id": 26, "titre": "Vieux films au ciné-club", "categorie": "culture", "budget": "faible", "description": "Séance de cinéma old-school, pas forcément pour tout le monde.", "note": 2},
+    {"id": 27, "titre": "Poker entre amis",         "categorie": "jeu",     "budget": "faible", "description": "Soirée poker à la maison, attention aux mauvais perdants.", "note": 4},
+    {"id": 28, "titre": "Restaurant étoilé",        "categorie": "food",    "budget": "élevé",  "description": "Expérience gastronomique exceptionnelle, budget serré après.", "note": 5},
+    {"id": 29, "titre": "Salle de sport discount",  "categorie": "sport",   "budget": "faible", "description": "Machines vieillissantes mais le prix fait oublier le reste.", "note": 2},
+    {"id": 30, "titre": "Pique-nique au Trocadéro", "categorie": "nature",  "budget": "faible", "description": "Vue sur la Tour Eiffel, sandwich et bonne humeur.",       "note": 5},
+    {"id": 31, "titre": "Escape Game budget",       "categorie": "jeu",     "budget": "moyen",  "description": "Version moins chère mais scénario un peu décevant.",      "note": 2},
+    {"id": 32, "titre": "Cours de salsa",           "categorie": "sport",   "budget": "moyen",  "description": "Premier cours offert, ensuite on accroche ou pas.",       "note": 3},
+    {"id": 33, "titre": "Food truck festival",      "categorie": "food",    "budget": "moyen",  "description": "Large choix de cuisine du monde dans un même endroit.",    "note": 4},
+    {"id": 34, "titre": "Visite catacombes",        "categorie": "culture", "budget": "faible", "description": "Impressionnant mais claustrophobes s'abstenir.",          "note": 4},
+    {"id": 35, "titre": "Billard américain",        "categorie": "jeu",     "budget": "faible", "description": "Bar avec billard, ambiance cool mais tables parfois prises.", "note": 3},
+    {"id": 36, "titre": "Zumba en plein air",       "categorie": "sport",   "budget": "faible", "description": "Cours gratuit dans le parc le samedi matin.",            "note": 3},
+    {"id": 37, "titre": "Brunch hors de prix",      "categorie": "food",    "budget": "élevé",  "description": "Joli cadre mais l'addition pique vraiment.",             "note": 1},
+    {"id": 38, "titre": "Opéra Bastille",           "categorie": "culture", "budget": "élevé",  "description": "Expérience unique, tarif réduit étudiant disponible.",    "note": 5},
+    {"id": 39, "titre": "Ping-pong au parc",        "categorie": "sport",   "budget": "faible", "description": "Tables en libre accès, juste ramener ses raquettes.",    "note": 4},
+    {"id": 40, "titre": "Musée en travaux",         "categorie": "culture", "budget": "moyen",  "description": "La moitié des salles fermées, vraiment décevant.",        "note": 1},
 ]
 
 # "next_id" est un compteur pour attribuer un ID unique à chaque nouvelle suggestion.
-next_id = 21
+next_id = 41
 
 
 # ==============================================================================
