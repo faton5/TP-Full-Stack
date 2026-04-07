@@ -8,10 +8,21 @@ const searchInput = document.getElementById("searchInput");
 const sortSelect = document.getElementById("sortSelect");
 const editModal = document.getElementById("editModal");
 const editForm = document.getElementById("editForm");
+const message = document.getElementById("message");
 
 // Filtres actifs
 let currentCategory = "toutes";
 let currentBudget = "tous";
+
+// Afficher un message de retour sous le formulaire
+function showMessage(texte, type) {
+    message.textContent = texte;
+    message.className = type; // "success" ou "error"
+    setTimeout(function() {
+        message.textContent = "";
+        message.className = "hidden";
+    }, 3000);
+}
 
 // GET — Récupérer et afficher les suggestions
 function fetchSuggestions() {
@@ -95,12 +106,20 @@ form.addEventListener("submit", function(event) {
         body: JSON.stringify(newSuggestion)
     })
     .then(function(response) { return response.json(); })
-    .then(function() {
-        form.reset();
-        fetchSuggestions();
-        fetchStats();
+    .then(function(data) {
+        if (data.error) {
+            showMessage("Erreur : " + data.error, "error");
+        } else {
+            form.reset();
+            showMessage("Sortie ajoutée avec succès !", "success");
+            fetchSuggestions();
+            fetchStats();
+        }
     })
-    .catch(function(err) { console.error("Erreur ajout :", err); });
+    .catch(function(err) {
+        showMessage("Impossible de contacter le serveur.", "error");
+        console.error("Erreur ajout :", err);
+    });
 });
 
 // DELETE — Supprimer une suggestion
